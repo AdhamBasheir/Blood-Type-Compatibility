@@ -1,8 +1,8 @@
 package main
 
 import (
-	"blood-type-compatibility/controllers"
 	"blood-type-compatibility/initializers"
+	"blood-type-compatibility/routes"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,13 +15,9 @@ func init() {
 func main() {
 	router := gin.Default()
 
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-
-	router.POST("/signup", controllers.SignUp)
+	routes.RegisterHealthRoutes(router)
+	routes.RegisterUserRoutes(router)
+	routes.RegisterBloodRoutes(router)
 
 	router.Run() // listen and serve on 0.0.0.0:8080
 }
