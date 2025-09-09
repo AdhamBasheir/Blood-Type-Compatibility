@@ -3,3 +3,7 @@
 
 # curl template
 curl.md
+
+# logs
+logs/
+*.log
