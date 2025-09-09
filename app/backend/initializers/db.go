@@ -2,10 +2,10 @@ package initializers
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -28,9 +28,9 @@ func ConnectToDB() {
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		logrus.WithError(err).Fatal("Failed to connect to database")
 	}
-	log.Println("Database connection established")
+	logrus.Info("Database connection established")
 
 	DB = db
 }
