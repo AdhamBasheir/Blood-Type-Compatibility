@@ -9,9 +9,9 @@ import (
 )
 
 func init() {
+	initializers.InitLogger()
 	initializers.InitEnv()
 	initializers.ConnectToDB()
-	initializers.InitLogger()
 }
 
 func main() {
