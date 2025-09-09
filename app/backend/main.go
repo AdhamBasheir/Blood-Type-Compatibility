@@ -2,7 +2,7 @@ package main
 
 import (
 	"blood-type-compatibility/initializers"
-	middleware "blood-type-compatibility/middlewares"
+	"blood-type-compatibility/middlewares"
 	"blood-type-compatibility/routes"
 
 	"github.com/gin-gonic/gin"
@@ -17,8 +17,8 @@ func init() {
 func main() {
 	router := gin.New()
 	router.Use(
-		middleware.Recovery(),
-		middleware.Logger(),
+		middlewares.Recovery(),
+		middlewares.Logger(),
 	)
 
 	routes.RegisterHealthRoutes(router)
