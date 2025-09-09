@@ -11,7 +11,14 @@ import (
 )
 
 func ListUsers(ctx *gin.Context) {
-	// Placeholder for user retrieval logic
+	var users []models.User
+	if err := initializers.DB.Find(&users).Error; err != nil {
+		log.Printf("Failed to fetch users: %v", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"users": users})
 }
 
 func GetUser(ctx *gin.Context) {
