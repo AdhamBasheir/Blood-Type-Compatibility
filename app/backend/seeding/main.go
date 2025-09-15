@@ -3,8 +3,8 @@ package main
 import (
 	"blood-type-compatibility/initializers"
 	"blood-type-compatibility/models"
-	"log"
 
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -32,12 +32,14 @@ func SeedBloodTypes() {
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {
 				if err := initializers.DB.Create(&bt).Error; err != nil {
-					log.Printf("Failed to seed blood type %v: %v", bt, err)
-				} else {
-					log.Printf("Seeded blood type: %v", bt)
+					logrus.WithError(err).Errorf("Failed to seed blood type %v: %v", bt, err)
+					logrus.WithFields(logrus.Fields{
+						"abo": bt.ABO,
+						"rh":  bt.Rh,
+					}).Error("Failed to seed blood type")
 				}
 			} else {
-				log.Printf("DB error: %v", err)
+				logrus.WithError(err).Error("Error checking existing blood type")
 			}
 		}
 	}
