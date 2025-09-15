@@ -3,7 +3,8 @@ package main
 import (
 	"blood-type-compatibility/initializers"
 	"blood-type-compatibility/models"
-	"log"
+
+	"github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -14,9 +15,9 @@ func init() {
 func Migrate() {
 	err := initializers.DB.AutoMigrate(&models.BloodType{}, &models.User{})
 	if err != nil {
-		log.Fatalf("Migration failed: %v", err)
+		logrus.WithError(err).Fatal("Database migration failed")
 	}
-	log.Println("Migration completed successfully")
+	logrus.Info("Database migration completed successfully")
 }
 
 func main() {
