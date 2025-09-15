@@ -40,7 +40,7 @@ func DeleteUser(ctx *gin.Context) {
 func SignUp(ctx *gin.Context) {
 	var body struct {
 		Name        string `json:"name" binding:"required"`
-		UserName    string `json:"username" binding:"required"`
+		Username    string `json:"username" binding:"required"`
 		Password    string `json:"password" binding:"required"`
 		BloodTypeID uint   `json:"blood_type_id" binding:"required"`
 	}
@@ -58,7 +58,7 @@ func SignUp(ctx *gin.Context) {
 
 	newUser := models.User{
 		Name:        body.Name,
-		UserName:    body.UserName,
+		Username:    body.Username,
 		Password:    string(hash),
 		BloodTypeID: body.BloodTypeID,
 	}
@@ -68,7 +68,7 @@ func SignUp(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 	} else {
 		logrus.WithFields(logrus.Fields{
-			"username": newUser.UserName,
+			"username": newUser.Username,
 			"user_id":  newUser.ID,
 		}).Info("User created successfully")
 		ctx.JSON(http.StatusOK, gin.H{"user": newUser})

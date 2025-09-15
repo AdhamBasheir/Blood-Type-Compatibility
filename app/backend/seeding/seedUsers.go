@@ -33,34 +33,34 @@ func SeedTestUsers() {
 
 		user := models.User{
 			Name:        name,
-			UserName:    username,
+			Username:    username,
 			Password:    string(hash),
 			BloodTypeID: bloodTypeID,
 		}
 
 		// Check if user already exists to avoid duplicates on repeated runs
 		var existing models.User
-		err = initializers.DB.Where("user_name = ?", username).First(&existing).Error
+		err = initializers.DB.Where("username = ?", username).First(&existing).Error
 		if err == gorm.ErrRecordNotFound {
 			if err := initializers.DB.Create(&user).Error; err != nil {
 				logrus.WithFields(logrus.Fields{
-					"user_name":     username,
+					"username":      username,
 					"blood_type_id": bloodTypeID,
 				}).WithError(err).Error("Failed to seed test user")
 			} else {
 				logrus.WithFields(logrus.Fields{
-					"user_name":     username,
+					"username":      username,
 					"blood_type_id": bloodTypeID,
 				}).Info("Seeded test user")
 			}
 		} else if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"user_name":     username,
+				"username":      username,
 				"blood_type_id": bloodTypeID,
 			}).WithError(err).Error("Failed to check if user exists")
 		} else {
 			logrus.WithFields(logrus.Fields{
-				"user_name":     username,
+				"username":      username,
 				"blood_type_id": bloodTypeID,
 			}).Info("User already exists, skipping seed")
 		}
