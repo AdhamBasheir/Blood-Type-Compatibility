@@ -27,7 +27,7 @@ func SeedBloodTypes() {
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {
 				if err := initializers.DB.Create(&bt).Error; err != nil {
-					logrus.WithError(err).Errorf("Failed to seed blood type %v: %v", bt, err)
+					logrus.WithError(err).Errorf("Failed to seed blood type %v", bt)
 					logrus.WithFields(logrus.Fields{
 						"abo": bt.ABO,
 						"rh":  bt.Rh,
@@ -36,6 +36,11 @@ func SeedBloodTypes() {
 			} else {
 				logrus.WithError(err).Error("Error checking existing blood type")
 			}
+		} else {
+			logrus.WithFields(logrus.Fields{
+				"abo": bt.ABO,
+				"rh":  bt.Rh,
+			}).Info("Blood type already exists, skipping seeding")
 		}
 	}
 }

@@ -14,9 +14,9 @@ func SeedTestUsers() {
 	// Example names just for testing
 	baseNames := []string{"Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Henry"}
 
-	// There are 8 blood types from your SeedBloodTypes
+	// There are 8 blood types
 	totalBloodTypes := 8
-	password := "password123"
+	password := "password"
 
 	for i := 1; i <= 64; i++ {
 		name := fmt.Sprintf("%s%d", baseNames[i%len(baseNames)], i)
@@ -40,7 +40,8 @@ func SeedTestUsers() {
 
 		// Check if user already exists to avoid duplicates on repeated runs
 		var existing models.User
-		if err := initializers.DB.Where("user_name = ?", username).First(&existing).Error; err == gorm.ErrRecordNotFound {
+		err = initializers.DB.Where("user_name = ?", username).First(&existing).Error
+		if err == gorm.ErrRecordNotFound {
 			if err := initializers.DB.Create(&user).Error; err != nil {
 				logrus.WithFields(logrus.Fields{
 					"user_name":     username,
