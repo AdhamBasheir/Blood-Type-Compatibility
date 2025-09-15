@@ -3,17 +3,17 @@ package controllers
 import (
 	"blood-type-compatibility/initializers"
 	"blood-type-compatibility/models"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func ListUsers(ctx *gin.Context) {
 	var users []models.User
 	if err := initializers.DB.Find(&users).Error; err != nil {
-		log.Printf("Failed to fetch users: %v", err)
+		logrus.WithError(err).Error("Failed to fetch users")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
 		return
 	}
@@ -64,10 +64,13 @@ func SignUp(ctx *gin.Context) {
 	}
 
 	if err := initializers.DB.Create(&newUser).Error; err != nil {
-		log.Printf("Failed to create user %v: %v", newUser, err)
+		logrus.WithError(err).Error("Failed to create user")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 	} else {
-		log.Printf("Created user: %v", newUser)
+		logrus.WithFields(logrus.Fields{
+			"username": newUser.UserName,
+			"user_id":  newUser.ID,
+		}).Info("User created successfully")
 		ctx.JSON(http.StatusOK, gin.H{"user": newUser})
 	}
 }
