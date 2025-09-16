@@ -4,7 +4,6 @@ import (
 	"blood-type-compatibility/helpers"
 	"blood-type-compatibility/initializers"
 	"blood-type-compatibility/models"
-	"errors"
 )
 
 type UserPayLoad struct {
@@ -17,7 +16,7 @@ type UserPayLoad struct {
 func CreateUser(input UserPayLoad) (*models.User, error) {
 	hashed, err := helpers.HashPassword(input.Password)
 	if err != nil {
-		return nil, errors.New("failed to hash password")
+		return nil, err
 	}
 
 	user := models.User{
