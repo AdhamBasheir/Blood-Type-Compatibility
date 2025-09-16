@@ -3,11 +3,11 @@ package controllers
 import (
 	"blood-type-compatibility/initializers"
 	"blood-type-compatibility/models"
+	"blood-type-compatibility/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func ListUsers(ctx *gin.Context) {
@@ -50,27 +50,22 @@ func SignUp(ctx *gin.Context) {
 		return
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	user, err := services.CreateUser(services.UserPayLoad{
+		Name:        body.Name,
+		Username:    body.Username,
+		Password:    body.Password,
+		BloodTypeID: body.BloodTypeID,
+	})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		logrus.WithError(err).Error("Failed to create user")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}
 
-	newUser := models.User{
-		Name:        body.Name,
-		Username:    body.Username,
-		Password:    string(hash),
-		BloodTypeID: body.BloodTypeID,
-	}
+	logrus.WithFields(logrus.Fields{
+		"username": user.Username,
+		"user_id":  user.ID,
+	}).Info("User created successfully")
 
-	if err := initializers.DB.Create(&newUser).Error; err != nil {
-		logrus.WithError(err).Error("Failed to create user")
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
-	} else {
-		logrus.WithFields(logrus.Fields{
-			"username": newUser.Username,
-			"user_id":  newUser.ID,
-		}).Info("User created successfully")
-		ctx.JSON(http.StatusOK, gin.H{"user": newUser})
-	}
+	ctx.JSON(http.StatusOK, gin.H{"user": user})
 }
