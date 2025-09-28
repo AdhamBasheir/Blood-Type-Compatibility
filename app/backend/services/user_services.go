@@ -8,24 +8,17 @@ import (
 	"encoding/base64"
 )
 
-type UserPayLoad struct {
-	Name        string
-	Username    string
-	Password    string
-	BloodTypeID uint
-}
-
-func CreateUser(input UserPayLoad) (*models.User, error) {
-	hashed, err := helpers.HashPassword(input.Password)
+func CreateUser(name, username, password string, bloodTypeID uint) (*models.User, error) {
+	hashed, err := helpers.HashPassword(password)
 	if err != nil {
 		return nil, err
 	}
 
 	user := models.User{
-		Name:         input.Name,
-		Username:     input.Username,
+		Name:         name,
+		Username:     username,
 		Password:     hashed,
-		BloodTypeID:  input.BloodTypeID,
+		BloodTypeID:  bloodTypeID,
 		SessionToken: "",
 		CSRFToken:    "",
 	}

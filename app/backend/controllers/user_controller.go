@@ -51,12 +51,7 @@ func SignUp(ctx *gin.Context) {
 		return
 	}
 
-	user, err := services.CreateUser(services.UserPayLoad{
-		Name:        body.Name,
-		Username:    body.Username,
-		Password:    body.Password,
-		BloodTypeID: body.BloodTypeID,
-	})
+	user, err := services.CreateUser(body.Name, body.Username, body.Password, body.BloodTypeID)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to create user")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
