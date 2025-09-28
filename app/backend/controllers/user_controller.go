@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"blood-type-compatibility/helpers"
 	"blood-type-compatibility/initializers"
 	"blood-type-compatibility/models"
 	"blood-type-compatibility/services"
@@ -68,4 +69,88 @@ func SignUp(ctx *gin.Context) {
 	}).Info("User created successfully")
 
 	ctx.JSON(http.StatusOK, gin.H{"user": user})
+}
+
+func Login(ctx *gin.Context) {
+	var body struct {
+		Username string `json:"username" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+	if ctx.Bind(&body) != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse request"})
+		return
+	}
+
+	user, ok := services.AuthenticateUser(body.Username, body.Password)
+	if !ok {
+		logrus.Warn("Authentication failed")
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+		return
+	}
+
+	sessionToken, csrfToken, err := services.CreateSession(user.ID)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to create session")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create session"})
+		return
+	}
+
+	ctx.SetCookie("session_token", sessionToken, helpers.SessionDuration, "/", "localhost", false, true)
+	ctx.SetCookie("csrf_token", csrfToken, helpers.SessionDuration, "/", "localhost", false, false)
+
+	user.SessionToken = sessionToken
+	user.CSRFToken = csrfToken
+	if err := initializers.DB.Save(&user).Error; err != nil {
+		logrus.WithError(err).Error("Failed to save session tokens")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session tokens"})
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"username": user.Username,
+		"user_id":  user.ID,
+	}).Info("User logged in successfully")
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message":       "Login successful",
+		"csrf_token":    csrfToken,
+		"session_token": sessionToken,
+	})
+}
+
+func Logout(ctx *gin.Context) {
+	var body struct {
+		Username string `json:"username" binding:"required"`
+	}
+	if ctx.Bind(&body) != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse request"})
+		return
+	}
+
+	csrfToken := ctx.GetHeader("X-CSRF-Token")
+	sessionToken, err := ctx.Cookie("session_token")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "No session token found"})
+		return
+	}
+
+	user, ok := services.AuthorizeUser(body.Username, csrfToken, sessionToken)
+	if !ok {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid CSRF token or session"})
+		return
+	}
+
+	ctx.SetCookie("session_token", "", -1, "/", "localhost", false, true)
+	ctx.SetCookie("csrf_token", "", -1, "/", "localhost", false, false)
+	if err := services.InvalidateSession(user.Username); err != nil {
+		logrus.WithError(err).Error("Failed to invalidate session")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to logout"})
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"username": user.Username,
+		"user_id":  user.ID,
+	}).Info("User logged out successfully")
+	ctx.JSON(http.StatusOK, gin.H{"message": "Logout successful"})
 }
